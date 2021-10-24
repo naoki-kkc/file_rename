@@ -55,14 +55,27 @@ def main():
         exec = question_to_execute()
 
     if exec:
-        print("RENAME!RENAME!RENAME!")
+        # print("RENAME!RENAME!RENAME!")
 
         for idx, in_file in enumerate(include_files):
             dirname  = os.path.dirname(in_file)
             basename = os.path.basename(in_file)
             newname  = create_new_filename(in_file, parsed_args.join_by, parsed_args.genre, parsed_args.no_ext_normalize)
             print("\t" + "(" + str(idx+1) + "/" + str(len(include_files)) + ") " + basename + " -> " + newname)
-            os.rename(os.path.join(dirname, basename), os.path.join(dirname, newname))
+            rename_path_modify = os.path.join(dirname, newname)
+            if os.path.exists(rename_path_modify):
+                print("[duplicate file] plz check duplicate")
+                cnt = 0
+                while True:
+                    cnt += 1
+                    rename_path_modify = os.path.join(dirname, add_suffix_duplicate_file(newname, cnt))
+                    print(cnt)
+                    if not os.path.exists (rename_path_modify):
+                        os.rename(os.path.join(dirname, basename), rename_path_modify)
+                        break
+            else:
+                os.rename(os.path.join(dirname, basename), rename_path_modify)
+                print("[rename] " + os.path.join(dirname, basename) + " -> " + rename_path_modify)
         return
     else:
         print("process abort.")
@@ -126,6 +139,12 @@ def ext_normalize(ext):
         return trans_dict[ext_lower]
     else:
         return ext_lower
+
+def add_suffix_duplicate_file(filename, count):
+    ext_dot_idx = filename.rfind(".")
+    fn_1 = filename[:ext_dot_idx]
+    fn_2 = filename[ext_dot_idx + 1 :]
+    return fn_1 + "_duplicate_" + str(count) + "." + fn_2
 
 if __name__ == "__main__":
     main()
